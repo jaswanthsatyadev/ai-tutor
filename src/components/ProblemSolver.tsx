@@ -13,12 +13,32 @@ import { Input } from '@/components/ui/input';
 import type { Profile } from '@/lib/profiles';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import ReactCrop, { type Crop as ReactCropType } from 'react-image-crop';
+import ReactCrop, { type Crop as ReactCropType, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
 
 interface ProblemSolverProps {
   profile: Profile;
+}
+
+function centerAspectCrop(
+    mediaWidth: number,
+    mediaHeight: number,
+    aspect: number
+  ) {
+    return centerCrop(
+      makeAspectCrop(
+        {
+          unit: '%',
+          width: 90,
+        },
+        aspect,
+        mediaWidth,
+        mediaHeight
+      ),
+      mediaWidth,
+      mediaHeight
+    )
 }
 
 export function ProblemSolver({ profile }: ProblemSolverProps) {
@@ -88,35 +108,62 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
       }
     }
   };
-  
+
   const handleCrop = () => {
     if (crop && imageRef.current && canvasRef.current) {
       const image = imageRef.current;
       const canvas = canvasRef.current;
       const scaleX = image.naturalWidth / image.width;
       const scaleY = image.naturalHeight / image.height;
-      canvas.width = crop.width;
-      canvas.height = crop.height;
+  
+      const cropX = crop.x * scaleX;
+      const cropY = crop.y * scaleY;
+      const cropWidth = crop.width * scaleX;
+      const cropHeight = crop.height * scaleY;
+  
+      if (cropWidth === 0 || cropHeight === 0) {
+        // Avoid creating a 0-size image
+        setIsCropOpen(false);
+        setCapturedImage(null);
+        setPhotoDataUri(capturedImage); // Use the original image if crop is zero
+        return;
+      }
+  
+      canvas.width = cropWidth;
+      canvas.height = cropHeight;
       const ctx = canvas.getContext('2d');
+  
       if (ctx) {
         ctx.drawImage(
           image,
-          crop.x * scaleX,
-          crop.y * scaleY,
-          crop.width * scaleX,
-          crop.height * scaleY,
+          cropX,
+          cropY,
+          cropWidth,
+          cropHeight,
           0,
           0,
-          crop.width,
-          crop.height
+          cropWidth,
+          cropHeight
         );
         const croppedDataUri = canvas.toDataURL('image/jpeg');
         setPhotoDataUri(croppedDataUri);
         setIsCropOpen(false);
         setCapturedImage(null);
+        setCrop(undefined);
       }
+    } else if (capturedImage) {
+      // If no crop is selected, use the original image
+      setPhotoDataUri(capturedImage);
+      setIsCropOpen(false);
+      setCapturedImage(null);
     }
   };
+
+  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
+    const { width, height } = e.currentTarget;
+    const initialCrop = centerAspectCrop(width, height, 1);
+    setCrop(initialCrop);
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -362,7 +409,13 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Dialog open={isCropOpen} onOpenChange={setIsCropOpen}>
+      <Dialog open={isCropOpen} onOpenChange={(isOpen) => {
+        setIsCropOpen(isOpen);
+        if (!isOpen) {
+            setCapturedImage(null);
+            setCrop(undefined);
+        }
+      }}>
         <DialogContent className="sm:max-w-[625px]">
             <DialogHeader>
                 <DialogTitle>Crop Image</DialogTitle>
@@ -371,14 +424,14 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                 <div className="flex justify-center">
                     <ReactCrop
                         crop={crop}
-                        onChange={c => setCrop(c)}
+                        onChange={(_, percentCrop) => setCrop(percentCrop)}
                     >
-                        <img ref={imageRef} src={capturedImage} alt="To crop" style={{maxHeight: "70vh"}}/>
+                        <img ref={imageRef} src={capturedImage} alt="To crop" style={{maxHeight: "70vh"}} onLoad={onImageLoad}/>
                     </ReactCrop>
                 </div>
             )}
             <DialogFooter>
-                <Button variant="secondary" onClick={() => { setIsCropOpen(false); setCapturedImage(null);}}>Cancel</Button>
+                <Button variant="secondary" onClick={() => { setIsCropOpen(false); setCapturedImage(null); setCrop(undefined)}}>Cancel</Button>
                 <Button onClick={handleCrop}>
                     <Crop className="mr-2" />
                     Crop and Use Image
@@ -389,3 +442,5 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     </>
   );
 }
+
+    
