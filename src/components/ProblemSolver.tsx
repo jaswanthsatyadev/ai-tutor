@@ -38,6 +38,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const [isCropOpen, setIsCropOpen] = useState(false);
   const [crop, setCrop] = useState<ReactCropType>();
   const imageRef = useRef<HTMLImageElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollViewportRef = useRef<ElementRef<"div">>(null);
   const { toast } = useToast();
@@ -237,9 +238,12 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                 </div>
             )}
             <div className="flex flex-col sm:flex-row gap-2">
-                 <div className="relative flex-1">
-                    <Input type="file" accept="image/*" onChange={handleFileChange} className="pl-10" />
-                    <Upload className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                 <div className="flex-1">
+                    <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" ref={fileInputRef} />
+                    <Button variant="outline" className="w-full justify-start" onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="mr-2" />
+                        Select from Gallery
+                    </Button>
                  </div>
                  <div className="flex gap-2">
                     <Button variant="outline" size="icon" className="flex-1 sm:flex-none" onClick={() => setIsCameraOpen(true)}>
