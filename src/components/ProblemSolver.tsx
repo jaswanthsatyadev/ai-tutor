@@ -5,7 +5,7 @@ import type { ElementRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { generateExplanations, type GenerateExplanationsInput } from '@/ai/flows/generate-explanations';
-import { Loader2, ArrowRight, HelpCircle, Trophy, Upload, Mic, Type, Camera } from 'lucide-react';
+import { Loader2, ArrowRight, HelpCircle, Trophy, Upload, Mic, Type, Camera, Crop } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +13,9 @@ import { Input } from '@/components/ui/input';
 import type { Profile } from '@/lib/profiles';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import ReactCrop, { type Crop as ReactCropType } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+
 
 interface ProblemSolverProps {
   profile: Profile;
@@ -30,6 +33,11 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isCropOpen, setIsCropOpen] = useState(false);
+  const [crop, setCrop] = useState<ReactCropType>();
+  const imageRef = useRef<HTMLImageElement>(null);
 
   const scrollViewportRef = useRef<ElementRef<"div">>(null);
   const { toast } = useToast();
@@ -73,8 +81,38 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
       if (context) {
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         const dataUri = canvas.toDataURL('image/jpeg');
-        setPhotoDataUri(dataUri);
+        setCapturedImage(dataUri);
         setIsCameraOpen(false);
+        setIsCropOpen(true);
+      }
+    }
+  };
+  
+  const handleCrop = () => {
+    if (crop && imageRef.current && canvasRef.current) {
+      const image = imageRef.current;
+      const canvas = canvasRef.current;
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      canvas.width = crop.width;
+      canvas.height = crop.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(
+          image,
+          crop.x * scaleX,
+          crop.y * scaleY,
+          crop.width * scaleX,
+          crop.height * scaleY,
+          0,
+          0,
+          crop.width,
+          crop.height
+        );
+        const croppedDataUri = canvas.toDataURL('image/jpeg');
+        setPhotoDataUri(croppedDataUri);
+        setIsCropOpen(false);
+        setCapturedImage(null);
       }
     }
   };
@@ -84,7 +122,9 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setPhotoDataUri(event.target?.result as string);
+        const dataUri = event.target?.result as string;
+        setCapturedImage(dataUri);
+        setIsCropOpen(true);
       };
       reader.readAsDataURL(file);
     }
@@ -318,8 +358,30 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Dialog open={isCropOpen} onOpenChange={setIsCropOpen}>
+        <DialogContent className="sm:max-w-[625px]">
+            <DialogHeader>
+                <DialogTitle>Crop Image</DialogTitle>
+            </DialogHeader>
+            {capturedImage && (
+                <div className="flex justify-center">
+                    <ReactCrop
+                        crop={crop}
+                        onChange={c => setCrop(c)}
+                    >
+                        <img ref={imageRef} src={capturedImage} alt="To crop" style={{maxHeight: "70vh"}}/>
+                    </ReactCrop>
+                </div>
+            )}
+            <DialogFooter>
+                <Button variant="secondary" onClick={() => { setIsCropOpen(false); setCapturedImage(null);}}>Cancel</Button>
+                <Button onClick={handleCrop}>
+                    <Crop className="mr-2" />
+                    Crop and Use Image
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
-
-    
