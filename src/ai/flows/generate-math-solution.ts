@@ -57,7 +57,7 @@ const generateMathSolutionPrompt = ai.definePrompt({
 7.  **For Telugu Explanations:**
     *   Use a conversational mix of Telugu script and common English words (also known as "Tanglish" or "Telugish").
     *   **Keep all mathematical and common technical terms in English** (e.g., area, length, radius, equation, formula, calculate, find, given, solution, step, answer, etc.).
-    *   The goal is to sound natural and be easy to understand, not overly formal or complicated.
+    *   **Do NOT use phonetically typed Telugu** (e.g., "enti", "cheppu"). The goal is to sound natural and be easy to understand, not overly formal or complicated.
 
 ---
 {{#if photoDataUri}}
