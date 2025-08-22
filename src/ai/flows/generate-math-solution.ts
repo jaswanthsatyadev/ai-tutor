@@ -31,7 +31,7 @@ export type GenerateMathSolutionInput = z.infer<typeof GenerateMathSolutionInput
 const GenerateMathSolutionOutputSchema = z.object({
   solution: z
     .string()
-    .describe('The complete, step-by-step mathematical solution with minimal to no explanation.'),
+    .describe('The complete, step-by-step mathematical solution with detailed explanations for each step.'),
 });
 export type GenerateMathSolutionOutput = z.infer<typeof GenerateMathSolutionOutputSchema>;
 
@@ -43,14 +43,14 @@ const generateMathSolutionPrompt = ai.definePrompt({
   name: 'generateMathSolutionPrompt',
   input: {schema: GenerateMathSolutionInputSchema},
   output: {schema: GenerateMathSolutionOutputSchema},
-  prompt: `You are an expert IIT Foundation math solver. Your task is to provide a complete, step-by-step mathematical solution to the given problem.
+  prompt: `You are an expert IIT Foundation math solver. Your task is to provide a complete, detailed, step-by-step mathematical solution to the given problem.
 
 **Rules:**
-1.  **Focus on Math:** Provide only the mathematical steps for the solution.
-2.  **Minimal Explanations:** Do NOT include detailed explanations, prose, or introductions. A one or two-word hint for a step is acceptable if absolutely necessary (e.g., "Formula:" or "Substitute:").
-3.  **Use Standard Formulas:** Strictly use standard formulas like (a+b)², (a+b)³, etc., commonly taught in the 9th class IIT Foundation curriculum.
-4.  **Complete Solution:** Provide the entire solution from the first step to the final answer.
-5.  **Clarity:** Ensure the mathematical notation is clear and easy to follow.
+1.  **Detailed Steps:** Break down the solution into clear, logical steps. Explain the reasoning behind each step in simple terms.
+2.  **Proper Symbols:** Use proper mathematical symbols and notation (e.g., use '×' for multiplication, '÷' for division, not '*' or '/').
+3.  **Clarity is Key:** Ensure the entire solution, from the initial values to the final answer, is easy to follow and understand.
+4.  **Use Standard Formulas:** Strictly use standard formulas like (a+b)², (a+b)³, etc., commonly taught in the 9th class IIT Foundation curriculum.
+5.  **Final Answer:** Clearly state the final answer at the end of the solution.
 
 ---
 {{#if photoDataUri}}
@@ -61,7 +61,7 @@ Photo: {{media url=photoDataUri}}
 Problem: {{{problemStatement}}}
 Student Profile: {{{studentProfile}}}
 
-Provide the complete mathematical solution now.
+Provide the complete, detailed mathematical solution now.
 `,
 });
 
