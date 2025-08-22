@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -49,8 +50,9 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const [problemStatement, setProblemStatement] = useState('');
   const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
   
-  const [quickMathSolution, setQuickMathSolution] = useState<string | null>(null);
-  
+  const [fullSolution, setFullSolution] = useState<string | null>(null);
+  const [isFullSolutionLoading, setIsFullSolutionLoading] = useState(false);
+  const [isProblemStarted, setIsProblemStarted] = useState(false);
   const [isExplanationStarted, setIsExplanationStarted] = useState(false);
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -88,7 +90,6 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
       };
       getCameraPermission();
     } else {
-        // Stop camera stream when dialog is closed
         if (videoRef.current && videoRef.current.srcObject) {
             const stream = videoRef.current.srcObject as MediaStream;
             stream.getTracks().forEach(track => track.stop());
@@ -186,27 +187,32 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const startProblem = async () => {
     setExplanations([]);
     setIsFinished(false);
-    setQuickMathSolution(null);
+    setFullSolution(null);
     setIsExplanationStarted(false);
-    setIsLoading(true);
-    
+    setIsProblemStarted(true);
+  }
+
+  const getFullAnswer = async (language: 'English' | 'Telugu') => {
+    if (isFullSolutionLoading) return;
+    setIsFullSolutionLoading(true);
+    setFullSolution(null);
     try {
-        const commonInput = {
+        const result = await generateMathSolution({
             problemStatement,
             photoDataUri: photoDataUri || undefined,
             studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
-        };
-        const mathResult = await generateMathSolution(commonInput);
-        setQuickMathSolution(mathResult.solution);
+            language,
+        });
+        setFullSolution(result.solution);
     } catch (error) {
-        console.error('Error starting problem:', error);
+        console.error(`Error generating ${language} answer:`, error);
         toast({
             variant: 'destructive',
-            title: 'Error generating quick answer',
+            title: `Error generating ${language} answer`,
             description: 'There was a problem communicating with the AI tutor. Please try again.',
         });
     } finally {
-        setIsLoading(false);
+        setIsFullSolutionLoading(false);
     }
   }
   
@@ -214,6 +220,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     if (isLoading) return;
     setIsLoading(true);
     setIsExplanationStarted(true);
+    setExplanations([]);
     try {
         const commonInput = {
             problemStatement,
@@ -366,51 +373,98 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             </div>
         </div>
         <div className="pt-4 flex flex-wrap gap-2 items-center">
-            <Button onClick={startProblem} disabled={isLoading || (!problemStatement && !photoDataUri)}>
-                {isLoading && !isExplanationStarted ? <Loader2 className="mr-2 animate-spin" /> : <ArrowRight className="mr-2" />}
-                {isLoading && !isExplanationStarted ? 'Solving...' : 'Start Solving'}
+            <Button onClick={startProblem} disabled={isLoading || (!problemStatement && !photoDataUri) || isProblemStarted}>
+              <ArrowRight className="mr-2" />
+              Start Solving
             </Button>
-             {quickMathSolution && !isLoading && (
-                 <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="secondary">
-                            <FileText className="mr-2" />
-                            Show Quick Answer
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-2xl">
-                        <DialogHeader>
-                            <DialogTitle>Quick Mathematical Solution</DialogTitle>
-                        </DialogHeader>
-                        <ScrollArea className="max-h-[70vh] w-full pr-4 mt-4">
-                            <p className="whitespace-pre-wrap font-code text-sm">
-                                {quickMathSolution}
-                            </p>
-                        </ScrollArea>
-                        <DialogFooter>
-                            <DialogClose asChild>
-                                <Button>Close</Button>
-                            </DialogClose>
-                        </DialogFooter>
-                    </DialogContent>
-                 </Dialog>
-            )}
-            {quickMathSolution && !isExplanationStarted && !isLoading && (
-                <Button variant="secondary" onClick={startStepByStepExplanation}>
-                    <PlayCircle className="mr-2" />
-                    Start Step-by-Step Explanation
-                </Button>
+             {isProblemStarted && !isExplanationStarted && !isLoading && (
+                 <>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="secondary" onClick={() => getFullAnswer('English')}>
+                                <FileText className="mr-2" />
+                                Show Full Answer in English
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-2xl">
+                            <DialogHeader>
+                                <DialogTitle>Full Answer (English)</DialogTitle>
+                            </DialogHeader>
+                            <ScrollArea className="max-h-[70vh] w-full pr-4 mt-4">
+                                {isFullSolutionLoading && (
+                                    <div className="flex items-center justify-center text-muted-foreground p-8">
+                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        Generating answer...
+                                    </div>
+                                )}
+                                {fullSolution && (
+                                    <p className="whitespace-pre-wrap font-code text-sm">
+                                        {fullSolution}
+                                    </p>
+                                )}
+                            </ScrollArea>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button>Close</Button>
+                                </DialogClose>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="secondary" onClick={() => getFullAnswer('Telugu')}>
+                                <FileText className="mr-2" />
+                                Show Full Answer in Telugu
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-2xl">
+                            <DialogHeader>
+                                <DialogTitle>Full Answer (Telugu)</DialogTitle>
+                            </DialogHeader>
+                            <ScrollArea className="max-h-[70vh] w-full pr-4 mt-4">
+                                {isFullSolutionLoading && (
+                                    <div className="flex items-center justify-center text-muted-foreground p-8">
+                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        Generating answer...
+                                    </div>
+                                )}
+                                {fullSolution && (
+                                    <p className="whitespace-pre-wrap font-code text-sm">
+                                        {fullSolution}
+                                    </p>
+                                )}
+                            </ScrollArea>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button>Close</Button>
+                                </DialogClose>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Button variant="secondary" onClick={startStepByStepExplanation}>
+                        <PlayCircle className="mr-2" />
+                        Start Step-by-Step Explanation
+                    </Button>
+                 </>
             )}
         </div>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden">
         <ScrollArea className="h-[40vh] sm:h-[450px] w-full pr-4" viewportRef={scrollViewportRef}>
           <div className="space-y-6">
-            {!isExplanationStarted && !isLoading && (
+            {!isProblemStarted && !isLoading && (
+              <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full">
+                <Bot className="h-12 w-12 mb-4" />
+                <h3 className="text-lg font-semibold">Ready to learn?</h3>
+                <p className="max-w-sm">Enter a problem and click "Start Solving" to begin.</p>
+              </div>
+            )}
+            {isProblemStarted && !isExplanationStarted && !isLoading && (
               <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full">
                 <FileText className="h-12 w-12 mb-4" />
-                <h3 className="text-lg font-semibold">Ready to learn?</h3>
-                <p className="max-w-sm">After solving, you can view the quick answer or start a detailed step-by-step explanation.</p>
+                <h3 className="text-lg font-semibold">Problem Ready</h3>
+                <p className="max-w-sm">You can view the full answer or start a detailed step-by-step explanation.</p>
               </div>
             )}
             {explanations.map((exp, index) => (
@@ -543,5 +597,3 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     </>
   );
 }
-
-    

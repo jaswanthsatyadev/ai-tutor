@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -25,6 +26,7 @@ const GenerateMathSolutionInputSchema = z.object({
     .describe(
       'The student profile, including name, class, focus area, and learning speed. For example: Deepak, 9th class, IIT Foundation track, focus: Mathematics first, then Science. Slow learner.'
     ),
+  language: z.string().describe('The language for the explanation, either "English" or "Telugu".'),
 });
 export type GenerateMathSolutionInput = z.infer<typeof GenerateMathSolutionInputSchema>;
 
@@ -43,12 +45,12 @@ const generateMathSolutionPrompt = ai.definePrompt({
   name: 'generateMathSolutionPrompt',
   input: {schema: GenerateMathSolutionInputSchema},
   output: {schema: GenerateMathSolutionOutputSchema},
-  prompt: `You are an expert IIT Foundation math solver. Your task is to provide a complete, step-by-step mathematical solution to the given problem.
+  prompt: `You are an expert IIT Foundation math solver. Your task is to provide a complete, step-by-step mathematical solution to the given problem in the specified language.
 
 **Rules:**
-1.  **Math Only:** Provide only the mathematical steps. Keep explanations to a bare minimum (e.g., "Given:", "Formula:", "Solution:").
-2.  **Proper Symbols:** Use proper mathematical symbols and notation (e.g., use '×' for multiplication, '÷' for division, not '*' or '/').
-3.  **Clarity is Key:** Ensure the entire solution, from the initial values to the final answer, is easy to follow.
+1.  **Language:** Generate the entire explanation ONLY in {{{language}}}.
+2.  **Clarity and Detail:** Provide detailed, step-by-step explanations for each part of the solution. The user should be able to understand the logic from start to finish. More math, less talk.
+3.  **Proper Symbols:** Use proper mathematical symbols and notation (e.g., use '×' for multiplication, '÷' for division, not '*' or '/').
 4.  **Use Standard Formulas:** Strictly use standard formulas like (a+b)², (a+b)³, etc., commonly taught in the 9th class IIT Foundation curriculum. This is a critical requirement.
 5.  **Final Answer:** Clearly state the final answer at the end of the solution.
 6.  **Concise Steps:** Combine calculations into a maximum of 5 logical steps.
@@ -62,7 +64,7 @@ Photo: {{media url=photoDataUri}}
 Problem: {{{problemStatement}}}
 Student Profile: {{{studentProfile}}}
 
-Provide the concise, math-only solution now.
+Provide the complete, detailed solution in {{{language}}} now.
 `,
 });
 
