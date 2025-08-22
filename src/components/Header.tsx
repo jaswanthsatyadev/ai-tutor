@@ -1,6 +1,11 @@
 import { BookOpen, User } from 'lucide-react';
+import type { Profile } from '@/lib/profiles';
 
-export function Header() {
+interface HeaderProps {
+  profile: Profile;
+}
+
+export function Header({ profile }: HeaderProps) {
   return (
     <header className="border-b bg-card sticky top-0 z-10">
       <div className="container mx-auto flex h-16 items-center justify-between p-4">
@@ -14,7 +19,7 @@ export function Header() {
         </div>
         <div className="hidden items-center gap-3 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground sm:flex">
           <User className="h-5 w-5 text-primary" />
-          <span>Student: <strong>Deepak (9th Class)</strong></span>
+          <span>Student: <strong>{profile.name} ({profile.class})</strong></span>
         </div>
       </div>
     </header>
