@@ -46,7 +46,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [currentStepContent, setCurrentStepContent] = useState('');
-  const [problemStatement, setProblemStatement] = useState('Find the value of x if 2x + 5 = 15.');
+  const [problemStatement, setProblemStatement] = useState('');
   const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
   
   const [isCameraOpen, setIsCameraOpen] = useState(false);
