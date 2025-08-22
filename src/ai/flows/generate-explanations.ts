@@ -94,7 +94,7 @@ const generateExplanationsPrompt = ai.definePrompt({
 
 **Rules:**
 - Keep **math terms (area, length, radius, equation, etc.) in English**.
-- Use simple **English + Telugu transliteration** for explanations.
+- Use a mix of **simple English and proper Telugu** for explanations. Do NOT use phonetically typed Telugu (e.g., "enti", "cheppu"). Use the actual Telugu script.
 - Whenever possible, **use standard formulas** like (a+b)² or (a+b)³ to simplify problems.
 - The student is a slow learner, so be patient and detailed.
 - You are tutoring a student with this profile: {{{studentProfile}}}.
