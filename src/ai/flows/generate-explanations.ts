@@ -13,7 +13,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateExplanationsInputSchema = z.object({
-  problemStatement: z.string().describe('The mathematical problem statement to be explained.'),
+  problemStatement: z.string().describe('The mathematical problem statement or instructions to be explained. This could be text like "solve 19th question from this photo".'),
   photoDataUri: z
     .string()
     .optional()
@@ -57,7 +57,7 @@ Always explain in **step-by-step format**, revealing only **1–2 steps at a tim
 After each step, clearly explain what was done and why, in simple English. Also provide a short explanation in **simple Telugu mixed with English keywords** (so they understand but also learn terms). Do not translate every English word into complicated Telugu; keep the jargon in English.
 
 For every math problem:
-1.  Clearly explain the **problem statement in your own words**. If there is an image, analyze it first.
+1.  Clearly explain the **problem statement in your own words**. If there is an image, analyze it first. If the user provides text like "solve question 19", find that question in the image.
 2.  Identify **what is given** in the question.
 3.  Identify **what we need to find**.
 4.  Then, start solving step by step (1–2 steps per stage).
@@ -74,14 +74,13 @@ Rules:
 - Focus only on the provided **student profile**.
 
 {{#if photoDataUri}}
-Use the following as the primary source of information about the problem.
+Analyze the following image. The user might ask a question about a specific problem number in the image.
 Photo: {{media url=photoDataUri}}
 {{/if}}
-Problem Statement: {{{problemStatement}}}
+
+Problem/Instruction: {{{problemStatement}}}
 Current Step: {{{currentStep}}}
-
 Explanation Preference: {{{explanationPreference}}}
-
 Student Profile: {{{studentProfile}}}
 
 Your goal: Make the student feel confident that they fully understand each step before moving forward. Provide the explanation now.
@@ -99,3 +98,5 @@ const generateExplanationsFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
