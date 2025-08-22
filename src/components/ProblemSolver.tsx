@@ -5,13 +5,14 @@ import type { ElementRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { generateExplanations, type GenerateExplanationsInput } from '@/ai/flows/generate-explanations';
-import { Loader2, ArrowRight, HelpCircle, Trophy, Upload, Mic, Type, Camera, Crop } from 'lucide-react';
+import { generateMathSolution } from '@/ai/flows/generate-math-solution';
+import { Loader2, ArrowRight, HelpCircle, Trophy, Upload, Mic, Type, Camera, Crop, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import type { Profile } from '@/lib/profiles';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import ReactCrop, { type Crop as ReactCropType, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -24,7 +25,6 @@ interface ProblemSolverProps {
 function centerAspectCrop(
     mediaWidth: number,
     mediaHeight: number,
-    aspect: number
   ) {
     return centerCrop(
       makeAspectCrop(
@@ -32,7 +32,7 @@ function centerAspectCrop(
           unit: '%',
           width: 90,
         },
-        aspect,
+        1, // aspect ratio 1:1 for the initial crop
         mediaWidth,
         mediaHeight
       ),
@@ -49,6 +49,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const [problemStatement, setProblemStatement] = useState('');
   const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
   
+  const [fullMathSolution, setFullMathSolution] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -162,8 +163,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const { width, height } = e.currentTarget;
-    const initialCrop = centerAspectCrop(width, height, 1);
-    setCrop(initialCrop);
+    setCrop(centerAspectCrop(width, height));
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -182,19 +182,57 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const startProblem = async () => {
     setExplanations([]);
     setIsFinished(false);
-    await fetchExplanation('Start of problem', 'Explain the problem statement and what is given and what we need to find.', photoDataUri || undefined);
+    setFullMathSolution(null);
+    setIsLoading(true);
+    
+    try {
+        const commonInput = {
+            problemStatement,
+            photoDataUri: photoDataUri || undefined,
+            studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
+        };
+
+        // Fire both requests in parallel
+        const mathSolutionPromise = generateMathSolution(commonInput);
+        const explanationPromise = generateExplanations({
+            ...commonInput,
+            currentStep: 'Start of problem',
+            explanationPreference: 'Explain the problem statement and what is given and what we need to find.',
+        });
+
+        const [mathResult, explanationResult] = await Promise.all([mathSolutionPromise, explanationPromise]);
+
+        setFullMathSolution(mathResult.solution);
+        
+        const newExplanation = explanationResult.explanation;
+        setExplanations([newExplanation]);
+        setCurrentStepContent(newExplanation);
+
+        if (newExplanation.toLowerCase().includes('final answer')) {
+            setIsFinished(true);
+        }
+    } catch (error) {
+        console.error('Error starting problem:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Error starting problem',
+            description: 'There was a problem communicating with the AI tutor. Please try again.',
+        });
+    } finally {
+        setIsLoading(false);
+    }
   }
 
-  const fetchExplanation = async (stepContent: string, preference: string, photo?: string) => {
-    if (isFinished && preference !== 'I did not understand. Please re-explain this step more slowly using simpler examples from Indian teaching style, daily life metaphors, and common objects.') return;
+  const fetchNextStep = async () => {
+    if (isFinished || isLoading) return;
     setIsLoading(true);
     try {
       const input: GenerateExplanationsInput = {
         problemStatement,
-        currentStep: stepContent,
+        currentStep: currentStepContent,
         studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
-        explanationPreference: preference,
-        photoDataUri: photo
+        explanationPreference: 'Explain the next step.',
+        photoDataUri: photoDataUri || undefined
       };
       const result = await generateExplanations(input);
       const newExplanation = result.explanation;
@@ -206,10 +244,10 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
         setIsFinished(true);
       }
     } catch (error) {
-      console.error('Error generating explanation:', error);
+      console.error('Error generating next step:', error);
       toast({
         variant: 'destructive',
-        title: 'Error generating explanation',
+        title: 'Error getting next step',
         description: 'There was a problem communicating with the AI tutor. Please try again.',
       });
     } finally {
@@ -303,11 +341,36 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                  </div>
             </div>
         </div>
-        <div className="pt-4">
+        <div className="pt-4 flex gap-2 items-center">
             <Button onClick={startProblem} disabled={isLoading || (!problemStatement && !photoDataUri)}>
-                <ArrowRight className="mr-2" />
-                Start Solving
+                {isLoading && explanations.length === 0 ? <Loader2 className="mr-2 animate-spin" /> : <ArrowRight className="mr-2" />}
+                {isLoading && explanations.length === 0 ? 'Solving...' : 'Start Solving'}
             </Button>
+             {fullMathSolution && !isLoading && (
+                 <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary">
+                            <FileText className="mr-2" />
+                            Show Full Answer
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Full Mathematical Solution</DialogTitle>
+                        </DialogHeader>
+                        <ScrollArea className="max-h-[70vh] w-full pr-4 mt-4">
+                            <p className="whitespace-pre-wrap font-code text-sm">
+                                {fullMathSolution}
+                            </p>
+                        </ScrollArea>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button>Close</Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </DialogContent>
+                 </Dialog>
+            )}
         </div>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden">
@@ -368,7 +431,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                 I didn't understand
             </Button>
             <Button
-                onClick={() => fetchExplanation(currentStepContent, 'Explain the next step.')}
+                onClick={fetchNextStep}
                 disabled={isLoading || isFinished}
                 className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
             >

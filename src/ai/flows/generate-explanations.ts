@@ -78,7 +78,7 @@ const generateExplanationsPrompt = ai.definePrompt({
         *   మనం కనుక్కోవాల్సింది area.
 
 4.  **Explain Formula in Simple Words**
-    *   Show the formula step-by-step in English. **Always check if a standard formula like (a+b)² or (a+b)³ can be used.**
+    *   Show the formula step-by-step in English. **Always check if a standard formula like (a+b)² or (a+b)³ can be used. This is a strict requirement.**
     *   Then, on a new line, explain it in Telugu.
     *   Example:
         *   Area of rectangle = Length × Breadth.
@@ -86,7 +86,7 @@ const generateExplanationsPrompt = ai.definePrompt({
 
 5.  **Do Step-by-Step Calculation (More Math, Less Talk)**
     *   After the initial explanation, focus on showing the math steps clearly.
-    *   Present the solution in larger chunks of calculations. Reduce the number of steps by combining multiple calculations.
+    *   Present the solution in larger chunks of calculations. Reduce the number of steps by combining multiple calculations to a maximum of 5 steps.
     *   Provide a very brief summary of what you did at the end of a chunk, not for every single line.
 
 6.  **Show Final Answer Clearly**
@@ -101,8 +101,8 @@ const generateExplanationsPrompt = ai.definePrompt({
 
 **Rules:**
 - Keep **math terms (area, length, radius, equation, etc.) in English**.
-- For Telugu explanations, use a mix of **simple English and proper Telugu**. Do NOT use phonetically typed Telugu (e.g., "enti", "cheppu"). Use the actual Telugu script.
-- **Strictly use standard formulas** like (a+b)² or (a+b)³ whenever possible to simplify problems. This is a critical step.
+- For Telugu explanations, use a mix of **simple English and proper Telugu script**. Do NOT use phonetically typed Telugu (e.g., "enti", "cheppu"). This is a strict rule.
+- **Strictly use standard formulas** like (a+b)², (a+b)³, etc. commonly taught in 9th class IIT Foundation curriculum whenever possible to simplify problems. This is a critical step.
 - The student is a slow learner, so be patient and detailed.
 - You are tutoring a student with this profile: {{{studentProfile}}}.
 - Focus only on the provided student profile.
