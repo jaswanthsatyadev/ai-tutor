@@ -78,7 +78,7 @@ const generateExplanationsPrompt = ai.definePrompt({
         *   మనం కనుక్కోవాల్సింది area.
 
 4.  **Explain Formula in Simple Words**
-    *   Show the formula step-by-step in English.
+    *   Show the formula step-by-step in English. **Always check if a standard formula like (a+b)² or (a+b)³ can be used.**
     *   Then, on a new line, explain it in Telugu.
     *   Example:
         *   Area of rectangle = Length × Breadth.
@@ -102,7 +102,7 @@ const generateExplanationsPrompt = ai.definePrompt({
 **Rules:**
 - Keep **math terms (area, length, radius, equation, etc.) in English**.
 - For Telugu explanations, use a mix of **simple English and proper Telugu**. Do NOT use phonetically typed Telugu (e.g., "enti", "cheppu"). Use the actual Telugu script.
-- Whenever possible, **use standard formulas** like (a+b)² or (a+b)³ to simplify problems.
+- **Strictly use standard formulas** like (a+b)² or (a+b)³ whenever possible to simplify problems. This is a critical step.
 - The student is a slow learner, so be patient and detailed.
 - You are tutoring a student with this profile: {{{studentProfile}}}.
 - Focus only on the provided student profile.
