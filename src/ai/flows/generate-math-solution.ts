@@ -31,7 +31,7 @@ export type GenerateMathSolutionInput = z.infer<typeof GenerateMathSolutionInput
 const GenerateMathSolutionOutputSchema = z.object({
   solution: z
     .string()
-    .describe('The complete, step-by-step mathematical solution with detailed explanations for each step.'),
+    .describe('The concise, step-by-step mathematical solution with minimal to no explanation.'),
 });
 export type GenerateMathSolutionOutput = z.infer<typeof GenerateMathSolutionOutputSchema>;
 
@@ -43,14 +43,15 @@ const generateMathSolutionPrompt = ai.definePrompt({
   name: 'generateMathSolutionPrompt',
   input: {schema: GenerateMathSolutionInputSchema},
   output: {schema: GenerateMathSolutionOutputSchema},
-  prompt: `You are an expert IIT Foundation math solver. Your task is to provide a complete, detailed, step-by-step mathematical solution to the given problem.
+  prompt: `You are an expert IIT Foundation math solver. Your task is to provide a complete, step-by-step mathematical solution to the given problem.
 
 **Rules:**
-1.  **Detailed Steps:** Break down the solution into clear, logical steps. Explain the reasoning behind each step in simple terms.
+1.  **Math Only:** Provide only the mathematical steps. Keep explanations to a bare minimum (e.g., "Given:", "Formula:", "Solution:").
 2.  **Proper Symbols:** Use proper mathematical symbols and notation (e.g., use '×' for multiplication, '÷' for division, not '*' or '/').
-3.  **Clarity is Key:** Ensure the entire solution, from the initial values to the final answer, is easy to follow and understand.
-4.  **Use Standard Formulas:** Strictly use standard formulas like (a+b)², (a+b)³, etc., commonly taught in the 9th class IIT Foundation curriculum.
+3.  **Clarity is Key:** Ensure the entire solution, from the initial values to the final answer, is easy to follow.
+4.  **Use Standard Formulas:** Strictly use standard formulas like (a+b)², (a+b)³, etc., commonly taught in the 9th class IIT Foundation curriculum. This is a critical requirement.
 5.  **Final Answer:** Clearly state the final answer at the end of the solution.
+6.  **Concise Steps:** Combine calculations into a maximum of 5 logical steps.
 
 ---
 {{#if photoDataUri}}
@@ -61,7 +62,7 @@ Photo: {{media url=photoDataUri}}
 Problem: {{{problemStatement}}}
 Student Profile: {{{studentProfile}}}
 
-Provide the complete, detailed mathematical solution now.
+Provide the concise, math-only solution now.
 `,
 });
 

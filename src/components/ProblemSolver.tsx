@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { generateExplanations, type GenerateExplanationsInput } from '@/ai/flows/generate-explanations';
 import { generateMathSolution } from '@/ai/flows/generate-math-solution';
-import { Loader2, ArrowRight, HelpCircle, Trophy, Upload, Mic, Type, Camera, Crop, FileText } from 'lucide-react';
+import { Loader2, ArrowRight, HelpCircle, Trophy, Upload, Mic, Type, Camera, Crop, FileText, Bot } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,7 +32,7 @@ function centerAspectCrop(
           unit: '%',
           width: 90,
         },
-        1, // aspect ratio 1:1 for the initial crop
+        mediaWidth / mediaHeight,
         mediaWidth,
         mediaHeight
       ),
@@ -49,7 +49,10 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const [problemStatement, setProblemStatement] = useState('');
   const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
   
-  const [fullMathSolution, setFullMathSolution] = useState<string | null>(null);
+  const [quickMathSolution, setQuickMathSolution] = useState<string | null>(null);
+  const [detailedAnswer, setDetailedAnswer] = useState<string | null>(null);
+  const [isFetchingDetailedAnswer, setIsFetchingDetailedAnswer] = useState(false);
+
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -123,7 +126,6 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
       const cropHeight = crop.height * scaleY;
   
       if (cropWidth === 0 || cropHeight === 0) {
-        // Avoid creating a 0-size image, use the original if crop is invalid
         setPhotoDataUri(capturedImage);
         setIsCropOpen(false);
         setCapturedImage(null);
@@ -154,7 +156,6 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
         setCrop(undefined);
       }
     } else if (capturedImage) {
-      // If no crop is selected, use the original image
       setPhotoDataUri(capturedImage);
       setIsCropOpen(false);
       setCapturedImage(null);
@@ -182,7 +183,8 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const startProblem = async () => {
     setExplanations([]);
     setIsFinished(false);
-    setFullMathSolution(null);
+    setQuickMathSolution(null);
+    setDetailedAnswer(null);
     setIsLoading(true);
     
     try {
@@ -192,7 +194,6 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
         };
 
-        // Fire both requests in parallel
         const mathSolutionPromise = generateMathSolution(commonInput);
         const explanationPromise = generateExplanations({
             ...commonInput,
@@ -202,7 +203,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
 
         const [mathResult, explanationResult] = await Promise.all([mathSolutionPromise, explanationPromise]);
 
-        setFullMathSolution(mathResult.solution);
+        setQuickMathSolution(mathResult.solution);
         
         const newExplanation = explanationResult.explanation;
         setExplanations([newExplanation]);
@@ -288,6 +289,32 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     }
   };
 
+  const fetchDetailedAnswer = async () => {
+    if (detailedAnswer || isFetchingDetailedAnswer) return;
+    setIsFetchingDetailedAnswer(true);
+    try {
+      const input: GenerateExplanationsInput = {
+        problemStatement,
+        currentStep: 'Start of problem',
+        studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
+        explanationPreference: 'Explain the entire problem from start to finish with all steps.',
+        photoDataUri: photoDataUri || undefined
+      };
+      const result = await generateExplanations(input);
+      setDetailedAnswer(result.explanation);
+    } catch (error) {
+        console.error('Error fetching detailed answer:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Error fetching detailed answer',
+            description: 'There was a problem communicating with the AI tutor. Please try again.',
+        });
+    } finally {
+        setIsFetchingDetailedAnswer(false);
+    }
+  }
+
+
   useEffect(() => {
     if (scrollViewportRef.current) {
         scrollViewportRef.current.scrollTop = scrollViewportRef.current.scrollHeight;
@@ -341,27 +368,59 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                  </div>
             </div>
         </div>
-        <div className="pt-4 flex gap-2 items-center">
+        <div className="pt-4 flex flex-wrap gap-2 items-center">
             <Button onClick={startProblem} disabled={isLoading || (!problemStatement && !photoDataUri)}>
                 {isLoading && explanations.length === 0 ? <Loader2 className="mr-2 animate-spin" /> : <ArrowRight className="mr-2" />}
                 {isLoading && explanations.length === 0 ? 'Solving...' : 'Start Solving'}
             </Button>
-             {fullMathSolution && !isLoading && (
+             {quickMathSolution && !isLoading && (
                  <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="secondary">
                             <FileText className="mr-2" />
-                            Show Full Answer
+                            Show Quick Answer
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-2xl">
                         <DialogHeader>
-                            <DialogTitle>Full Mathematical Solution</DialogTitle>
+                            <DialogTitle>Quick Mathematical Solution</DialogTitle>
                         </DialogHeader>
                         <ScrollArea className="max-h-[70vh] w-full pr-4 mt-4">
                             <p className="whitespace-pre-wrap font-code text-sm">
-                                {fullMathSolution}
+                                {quickMathSolution}
                             </p>
+                        </ScrollArea>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button>Close</Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </DialogContent>
+                 </Dialog>
+            )}
+            {explanations.length > 0 && !isLoading && (
+                 <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary" onClick={fetchDetailedAnswer}>
+                            <Bot className="mr-2" />
+                            Show Detailed Answer
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Detailed Answer</DialogTitle>
+                        </DialogHeader>
+                        <ScrollArea className="max-h-[70vh] w-full pr-4 mt-4">
+                          {isFetchingDetailedAnswer ? (
+                            <div className="flex items-center justify-center text-muted-foreground py-8">
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                Generating detailed answer...
+                            </div>
+                          ) : (
+                            <p className="whitespace-pre-wrap font-body text-sm leading-relaxed">
+                                {detailedAnswer}
+                            </p>
+                          )}
                         </ScrollArea>
                         <DialogFooter>
                             <DialogClose asChild>
