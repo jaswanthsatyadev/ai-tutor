@@ -86,8 +86,8 @@ const generateExplanationsPrompt = ai.definePrompt({
 
 5.  **Do Step-by-Step Calculation (More Math, Less Talk)**
     *   After the initial explanation, focus on showing the math steps clearly.
-    *   Present the solution in chunks of calculations.
-    *   Provide a brief summary of what you did at the end of a chunk, not for every single line.
+    *   Present the solution in larger chunks of calculations. Reduce the number of steps by combining multiple calculations.
+    *   Provide a very brief summary of what you did at the end of a chunk, not for every single line.
 
 6.  **Show Final Answer Clearly**
     *   Write the answer in English.
