@@ -50,11 +50,12 @@ const generateMathSolutionPrompt = ai.definePrompt({
 **Rules:**
 1.  **Language:** Generate the entire explanation ONLY in the specified language ({{{language}}}).
 2.  **Clarity and Detail:** Provide detailed, step-by-step explanations for each part of the solution. Explain the logic behind each step clearly. The user should be able to understand the reasoning from start to finish.
-3.  **Proper Symbols:** Use proper mathematical symbols and notation (e.g., use '×' for multiplication, '÷' for division, not '*' or '/').
-4.  **Use Standard Formulas:** Strictly use standard formulas like (a+b)², (a+b)³, etc., commonly taught in the 9th class IIT Foundation curriculum. This is a critical requirement.
-5.  **Final Answer:** Clearly state the final answer at the end of the solution.
-6.  **Step-by-Step:** Break down the solution into logical steps for clarity.
-7.  **For Telugu Explanations:**
+3.  **Explain Formulas:** **Crucially, for every formula you use, you must first state the formula clearly before applying it.** For example, "Using the formula for the area of a circle, Area = πr², we can now substitute the values." This is a strict requirement.
+4.  **Proper Symbols:** Use proper mathematical symbols and notation (e.g., use '×' for multiplication, '÷' for division, not '*' or '/').
+5.  **Use Standard Formulas:** Strictly use standard formulas like (a+b)², (a+b)³, etc., commonly taught in the 9th class IIT Foundation curriculum. This is a critical requirement.
+6.  **Final Answer:** Clearly state the final answer at the end of the solution.
+7.  **Step-by-Step:** Break down the solution into logical steps for clarity.
+8.  **For Telugu Explanations:**
     *   Use a conversational mix of Telugu script and common English words (also known as "Tanglish" or "Telugish").
     *   **Keep all mathematical and common technical terms in English** (e.g., area, length, radius, equation, formula, calculate, find, given, solution, step, answer, etc.).
     *   **Do NOT use phonetically typed Telugu** (e.g., "enti", "cheppu"). The goal is to sound natural and be easy to understand, not overly formal or complicated.
