@@ -18,7 +18,7 @@ const GenerateExplanationsInputSchema = z.object({
     .string()
     .optional()
     .describe(
-      "An optional photo of a problem, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "An optional photo of a problem, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'. The photo may contain handwritten notes."
     ),
   currentStep: z.string().describe('The current step in solving the problem.'),
   studentProfile: z
@@ -103,7 +103,7 @@ const generateExplanationsPrompt = ai.definePrompt({
 ---
 
 {{#if photoDataUri}}
-Analyze the following image. The user might ask a question about a specific problem number in the image.
+Analyze the following image. The image may contain handwritten questions or notes. The user might ask a question about a specific problem number in the image.
 Photo: {{media url=photoDataUri}}
 {{/if}}
 

@@ -122,10 +122,11 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
       const cropHeight = crop.height * scaleY;
   
       if (cropWidth === 0 || cropHeight === 0) {
-        // Avoid creating a 0-size image
+        // Avoid creating a 0-size image, use the original if crop is invalid
+        setPhotoDataUri(capturedImage);
         setIsCropOpen(false);
         setCapturedImage(null);
-        setPhotoDataUri(capturedImage); // Use the original image if crop is zero
+        setCrop(undefined);
         return;
       }
   
@@ -442,5 +443,3 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     </>
   );
 }
-
-    
