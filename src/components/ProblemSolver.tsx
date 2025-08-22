@@ -495,7 +495,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                 className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
             >
                 {isFinished ? "Problem Solved!" : (isLoading ? "Thinking..." : "Next Step")}
-                {isLoading ? <Loader2 className="animate-spin" /> : <ArrowRight />}
+                {isLoading ? <Loader2 className="ml-2 animate-spin" /> : <ArrowRight className="ml-2" />}
             </Button>
             </div>
         </CardFooter>
@@ -565,3 +565,5 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     </>
   );
 }
+
+    
