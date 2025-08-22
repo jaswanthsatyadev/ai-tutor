@@ -32,7 +32,7 @@ function centerAspectCrop(
           unit: '%',
           width: 90,
         },
-        mediaWidth / mediaHeight,
+        1, // Allow free aspect ratio
         mediaWidth,
         mediaHeight
       ),
@@ -164,7 +164,19 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const { width, height } = e.currentTarget;
-    setCrop(centerAspectCrop(width, height));
+    setCrop(centerCrop(
+      makeAspectCrop(
+        {
+          unit: '%',
+          width: 90,
+        },
+        1,
+        width,
+        height
+      ),
+      width,
+      height
+    ));
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -295,7 +307,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     try {
       const input: GenerateExplanationsInput = {
         problemStatement,
-        currentStep: 'Start of problem',
+        currentStep: 'Start of problem', // This was the missing field
         studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
         explanationPreference: 'Explain the entire problem from start to finish with all steps.',
         photoDataUri: photoDataUri || undefined
