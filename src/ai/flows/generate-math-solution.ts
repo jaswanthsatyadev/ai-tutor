@@ -49,11 +49,11 @@ const generateMathSolutionPrompt = ai.definePrompt({
 
 **Rules:**
 1.  **Language:** Generate the entire explanation ONLY in {{{language}}}.
-2.  **Clarity and Detail:** Provide detailed, step-by-step explanations for each part of the solution. The user should be able to understand the logic from start to finish. More math, less talk.
+2.  **Clarity and Detail:** Provide detailed, step-by-step explanations for each part of the solution. Explain the logic behind each step clearly. The user should be able to understand the reasoning from start to finish.
 3.  **Proper Symbols:** Use proper mathematical symbols and notation (e.g., use '×' for multiplication, '÷' for division, not '*' or '/').
 4.  **Use Standard Formulas:** Strictly use standard formulas like (a+b)², (a+b)³, etc., commonly taught in the 9th class IIT Foundation curriculum. This is a critical requirement.
 5.  **Final Answer:** Clearly state the final answer at the end of the solution.
-6.  **Concise Steps:** Combine calculations into a maximum of 5 logical steps.
+6.  **Step-by-Step:** Break down the solution into logical steps for clarity.
 
 ---
 {{#if photoDataUri}}

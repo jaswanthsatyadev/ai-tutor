@@ -50,7 +50,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const [problemStatement, setProblemStatement] = useState('');
   const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
   
-  const [fullSolution, setFullSolution] = useState<string | null>(null);
+  const [fullSolution, setFullSolution] = useState<{english: string | null, telugu: string | null}>({ english: null, telugu: null });
   const [isFullSolutionLoading, setIsFullSolutionLoading] = useState(false);
   const [isProblemStarted, setIsProblemStarted] = useState(false);
   const [isExplanationStarted, setIsExplanationStarted] = useState(false);
@@ -187,15 +187,16 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const startProblem = async () => {
     setExplanations([]);
     setIsFinished(false);
-    setFullSolution(null);
+    setFullSolution({ english: null, telugu: null });
     setIsExplanationStarted(false);
     setIsProblemStarted(true);
   }
 
   const getFullAnswer = async (language: 'English' | 'Telugu') => {
-    if (isFullSolutionLoading) return;
+    const langKey = language.toLowerCase() as 'english' | 'telugu';
+    if (fullSolution[langKey] || isFullSolutionLoading) return;
+
     setIsFullSolutionLoading(true);
-    setFullSolution(null);
     try {
         const result = await generateMathSolution({
             problemStatement,
@@ -203,7 +204,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
             language,
         });
-        setFullSolution(result.solution);
+        setFullSolution(prev => ({ ...prev, [langKey]: result.solution }));
     } catch (error) {
         console.error(`Error generating ${language} answer:`, error);
         toast({
@@ -391,15 +392,15 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                                 <DialogTitle>Full Answer (English)</DialogTitle>
                             </DialogHeader>
                             <ScrollArea className="max-h-[70vh] w-full pr-4 mt-4">
-                                {isFullSolutionLoading && (
+                                {(isFullSolutionLoading && !fullSolution.english) && (
                                     <div className="flex items-center justify-center text-muted-foreground p-8">
                                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                         Generating answer...
                                     </div>
                                 )}
-                                {fullSolution && (
+                                {fullSolution.english && (
                                     <p className="whitespace-pre-wrap font-code text-sm">
-                                        {fullSolution}
+                                        {fullSolution.english}
                                     </p>
                                 )}
                             </ScrollArea>
@@ -422,15 +423,15 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                                 <DialogTitle>Full Answer (Telugu)</DialogTitle>
                             </DialogHeader>
                             <ScrollArea className="max-h-[70vh] w-full pr-4 mt-4">
-                                {isFullSolutionLoading && (
+                                {(isFullSolutionLoading && !fullSolution.telugu) && (
                                     <div className="flex items-center justify-center text-muted-foreground p-8">
                                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                         Generating answer...
                                     </div>
                                 )}
-                                {fullSolution && (
+                                {fullSolution.telugu && (
                                     <p className="whitespace-pre-wrap font-code text-sm">
-                                        {fullSolution}
+                                        {fullSolution.telugu}
                                     </p>
                                 )}
                             </ScrollArea>
