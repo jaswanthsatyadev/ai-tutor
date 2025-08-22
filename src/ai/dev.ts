@@ -4,3 +4,4 @@ config();
 
 import '@/ai/flows/generate-explanations.ts';
 import '@/ai/flows/generate-math-solution.ts';
+import '@/ai/flows/generate-telugu-math-solution.ts';

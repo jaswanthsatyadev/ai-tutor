@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { generateExplanations, type GenerateExplanationsInput } from '@/ai/flows/generate-explanations';
 import { generateMathSolution } from '@/ai/flows/generate-math-solution';
+import { generateTeluguMathSolution } from '@/ai/flows/generate-telugu-math-solution';
 import { Loader2, ArrowRight, HelpCircle, Trophy, Upload, Mic, Type, Camera, Crop, FileText, Bot, PlayCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -198,12 +199,17 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
 
     setIsFullSolutionLoading(true);
     try {
-        const result = await generateMathSolution({
+        const commonInput = {
             problemStatement,
             photoDataUri: photoDataUri || undefined,
             studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
-            language,
-        });
+        };
+        let result;
+        if (language === 'English') {
+            result = await generateMathSolution(commonInput);
+        } else {
+            result = await generateTeluguMathSolution(commonInput);
+        }
         setFullSolution(prev => ({ ...prev, [langKey]: result.solution }));
     } catch (error) {
         console.error(`Error generating ${language} answer:`, error);
