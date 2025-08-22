@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -23,7 +24,7 @@ const GenerateTeluguMathSolutionInputSchema = z.object({
    studentProfile: z
     .string()
     .describe(
-      'The student profile, including name, class, focus area, and learning speed. For example: Deepak, 9th class, IIT Foundation track, focus: Mathematics first, then Science. Slow learner.'
+      'The student profile, including name, class, focus area, and learning speed. For example: Deepak, 9th class, IIT Foundation track, focus: Mathematics first, ahen Science. Slow learner.'
     ),
 });
 export type GenerateTeluguMathSolutionInput = z.infer<typeof GenerateTeluguMathSolutionInputSchema>;
@@ -56,6 +57,7 @@ const generateTeluguMathSolutionPrompt = ai.definePrompt({
     *   Use a conversational mix of **proper Telugu script** and common English words.
     *   **Keep all mathematical and common technical terms in English script** (e.g., area, length, radius, equation, formula, calculate, find, given, solution, step, answer, etc.).
     *   **Do NOT use phonetically typed Telugu** (e.g., "enti", "cheppu"). Use proper Telugu script for Telugu words, and English script for English words. The goal is to sound natural and be easy to understand for a student used to bilingual instruction. For example: "మనం rectangle area కనుక్కోవాలి." is correct.
+8.  **Final Summary:** After providing the full detailed solution, add a final section titled "**Here is a quick summary of the steps:**". Under this heading, list all the mathematical steps from the solution concisely, without the detailed explanations, to give a quick overview of the calculation from start to finish.
 
 ---
 {{#if photoDataUri}}
@@ -66,7 +68,7 @@ Photo: {{media url=photoDataUri}}
 Problem: {{{problemStatement}}}
 Student Profile: {{{studentProfile}}}
 
-Provide the complete, highly detailed solution in conversational Telugu now.
+Provide the complete, highly detailed solution in conversational Telugu now, following all the rules above.
 `,
 });
 
