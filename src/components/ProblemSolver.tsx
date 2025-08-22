@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { generateExplanations, type GenerateExplanationsInput } from '@/ai/flows/generate-explanations';
 import { generateMathSolution } from '@/ai/flows/generate-math-solution';
-import { Loader2, ArrowRight, HelpCircle, Trophy, Upload, Mic, Type, Camera, Crop, FileText, Bot } from 'lucide-react';
+import { Loader2, ArrowRight, HelpCircle, Trophy, Upload, Mic, Type, Camera, Crop, FileText, Bot, PlayCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,8 +50,8 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
   
   const [quickMathSolution, setQuickMathSolution] = useState<string | null>(null);
-  const [detailedAnswer, setDetailedAnswer] = useState<string | null>(null);
-  const [isFetchingDetailedAnswer, setIsFetchingDetailedAnswer] = useState(false);
+  
+  const [isExplanationStarted, setIsExplanationStarted] = useState(false);
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -164,16 +164,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const { width, height } = e.currentTarget;
-    setCrop(centerCrop(
-      makeAspectCrop(
-        {
-          unit: '%',
-          width: 90,
-        },
-        1,
-        width,
-        height
-      ),
+    setCrop(centerAspectCrop(
       width,
       height
     ));
@@ -196,7 +187,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     setExplanations([]);
     setIsFinished(false);
     setQuickMathSolution(null);
-    setDetailedAnswer(null);
+    setIsExplanationStarted(false);
     setIsLoading(true);
     
     try {
@@ -205,17 +196,36 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             photoDataUri: photoDataUri || undefined,
             studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
         };
+        const mathResult = await generateMathSolution(commonInput);
+        setQuickMathSolution(mathResult.solution);
+    } catch (error) {
+        console.error('Error starting problem:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Error generating quick answer',
+            description: 'There was a problem communicating with the AI tutor. Please try again.',
+        });
+    } finally {
+        setIsLoading(false);
+    }
+  }
+  
+  const startStepByStepExplanation = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    setIsExplanationStarted(true);
+    try {
+        const commonInput = {
+            problemStatement,
+            photoDataUri: photoDataUri || undefined,
+            studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
+        };
 
-        const mathSolutionPromise = generateMathSolution(commonInput);
-        const explanationPromise = generateExplanations({
+        const explanationResult = await generateExplanations({
             ...commonInput,
             currentStep: 'Start of problem',
             explanationPreference: 'Explain the problem statement and what is given and what we need to find.',
         });
-
-        const [mathResult, explanationResult] = await Promise.all([mathSolutionPromise, explanationPromise]);
-
-        setQuickMathSolution(mathResult.solution);
         
         const newExplanation = explanationResult.explanation;
         setExplanations([newExplanation]);
@@ -225,16 +235,17 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             setIsFinished(true);
         }
     } catch (error) {
-        console.error('Error starting problem:', error);
+        console.error('Error starting explanation:', error);
         toast({
             variant: 'destructive',
-            title: 'Error starting problem',
+            title: 'Error starting explanation',
             description: 'There was a problem communicating with the AI tutor. Please try again.',
         });
     } finally {
         setIsLoading(false);
     }
   }
+
 
   const fetchNextStep = async () => {
     if (isFinished || isLoading) return;
@@ -301,32 +312,6 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     }
   };
 
-  const fetchDetailedAnswer = async () => {
-    if (detailedAnswer || isFetchingDetailedAnswer) return;
-    setIsFetchingDetailedAnswer(true);
-    try {
-      const input: GenerateExplanationsInput = {
-        problemStatement,
-        currentStep: 'Start of problem', // This was the missing field
-        studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
-        explanationPreference: 'Explain the entire problem from start to finish with all steps.',
-        photoDataUri: photoDataUri || undefined
-      };
-      const result = await generateExplanations(input);
-      setDetailedAnswer(result.explanation);
-    } catch (error) {
-        console.error('Error fetching detailed answer:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Error fetching detailed answer',
-            description: 'There was a problem communicating with the AI tutor. Please try again.',
-        });
-    } finally {
-        setIsFetchingDetailedAnswer(false);
-    }
-  }
-
-
   useEffect(() => {
     if (scrollViewportRef.current) {
         scrollViewportRef.current.scrollTop = scrollViewportRef.current.scrollHeight;
@@ -382,8 +367,8 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
         </div>
         <div className="pt-4 flex flex-wrap gap-2 items-center">
             <Button onClick={startProblem} disabled={isLoading || (!problemStatement && !photoDataUri)}>
-                {isLoading && explanations.length === 0 ? <Loader2 className="mr-2 animate-spin" /> : <ArrowRight className="mr-2" />}
-                {isLoading && explanations.length === 0 ? 'Solving...' : 'Start Solving'}
+                {isLoading && !isExplanationStarted ? <Loader2 className="mr-2 animate-spin" /> : <ArrowRight className="mr-2" />}
+                {isLoading && !isExplanationStarted ? 'Solving...' : 'Start Solving'}
             </Button>
              {quickMathSolution && !isLoading && (
                  <Dialog>
@@ -410,43 +395,24 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                     </DialogContent>
                  </Dialog>
             )}
-            {explanations.length > 0 && !isLoading && (
-                 <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="secondary" onClick={fetchDetailedAnswer}>
-                            <Bot className="mr-2" />
-                            Show Detailed Answer
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-2xl">
-                        <DialogHeader>
-                            <DialogTitle>Detailed Answer</DialogTitle>
-                        </DialogHeader>
-                        <ScrollArea className="max-h-[70vh] w-full pr-4 mt-4">
-                          {isFetchingDetailedAnswer ? (
-                            <div className="flex items-center justify-center text-muted-foreground py-8">
-                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                Generating detailed answer...
-                            </div>
-                          ) : (
-                            <p className="whitespace-pre-wrap font-body text-sm leading-relaxed">
-                                {detailedAnswer}
-                            </p>
-                          )}
-                        </ScrollArea>
-                        <DialogFooter>
-                            <DialogClose asChild>
-                                <Button>Close</Button>
-                            </DialogClose>
-                        </DialogFooter>
-                    </DialogContent>
-                 </Dialog>
+            {quickMathSolution && !isExplanationStarted && !isLoading && (
+                <Button variant="secondary" onClick={startStepByStepExplanation}>
+                    <PlayCircle className="mr-2" />
+                    Start Step-by-Step Explanation
+                </Button>
             )}
         </div>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden">
         <ScrollArea className="h-[40vh] sm:h-[450px] w-full pr-4" viewportRef={scrollViewportRef}>
           <div className="space-y-6">
+            {!isExplanationStarted && !isLoading && (
+              <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full">
+                <FileText className="h-12 w-12 mb-4" />
+                <h3 className="text-lg font-semibold">Ready to learn?</h3>
+                <p className="max-w-sm">After solving, you can view the quick answer or start a detailed step-by-step explanation.</p>
+              </div>
+            )}
             {explanations.map((exp, index) => (
               <div key={index} className="animate-in fade-in-50 slide-in-from-bottom-5 duration-500">
                 <div className="flex items-start gap-4">
@@ -461,8 +427,8 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                 </div>
               </div>
             ))}
-            {isLoading && explanations.length === 0 && (
-              <div className="flex items-center justify-center text-muted-foreground">
+            {isLoading && isExplanationStarted && explanations.length === 0 && (
+              <div className="flex items-center justify-center text-muted-foreground h-full">
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Your AI tutor is preparing your first explanation...
               </div>
@@ -489,7 +455,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
           </div>
         </ScrollArea>
       </CardContent>
-      {explanations.length > 0 && (
+      {isExplanationStarted && explanations.length > 0 && (
         <CardFooter className="border-t bg-slate-50 pt-6">
             <div className="flex w-full flex-col-reverse gap-4 sm:flex-row sm:justify-between">
             <Button
