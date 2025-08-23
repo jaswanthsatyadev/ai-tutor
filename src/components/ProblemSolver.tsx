@@ -335,11 +335,11 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   return (
     <>
     <Card className="flex h-full flex-col shadow-lg">
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl text-primary">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="font-headline text-xl sm:text-2xl text-primary">
           Problem to Solve
         </CardTitle>
-        <CardDescription className="pt-2">
+        <CardDescription className="pt-2 text-sm">
             Enter the problem below, upload an image, take a photo, or use your voice.
         </CardDescription>
         <div className="space-y-2 pt-2">
@@ -405,7 +405,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                                     </div>
                                 )}
                                 {fullSolution.english && (
-                                    <p className="whitespace-pre-wrap font-code text-sm">
+                                    <p className="whitespace-pre-wrap font-code text-sm sm:text-base">
                                         {fullSolution.english}
                                     </p>
                                 )}
@@ -445,7 +445,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                                     </div>
                                 )}
                                 {fullSolution.telugu && (
-                                    <p className="whitespace-pre-wrap font-code text-sm">
+                                    <p className="whitespace-pre-wrap font-code text-sm sm:text-base">
                                         {fullSolution.telugu}
                                     </p>
                                 )}
@@ -475,31 +475,31 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             )}
         </div>
       </CardHeader>
-      <CardContent className="flex-grow overflow-hidden">
+      <CardContent className="flex-grow overflow-hidden p-4 sm:p-6">
         <ScrollArea className="h-[40vh] sm:h-[450px] w-full pr-4" viewportRef={scrollViewportRef}>
           <div className="space-y-6">
             {!isProblemStarted && !isLoading && (
-              <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full">
+              <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full p-4">
                 <Bot className="h-12 w-12 mb-4" />
                 <h3 className="text-lg font-semibold">Ready to learn?</h3>
-                <p className="max-w-sm">Enter a problem and click "Start Solving" to begin.</p>
+                <p className="max-w-sm text-sm">Enter a problem and click "Start Solving" to begin.</p>
               </div>
             )}
             {isProblemStarted && !isExplanationStarted && !isLoading && (
-              <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full">
+              <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full p-4">
                 <FileText className="h-12 w-12 mb-4" />
                 <h3 className="text-lg font-semibold">Problem Ready</h3>
-                <p className="max-w-sm">You can view the full answer or start a detailed step-by-step explanation.</p>
+                <p className="max-w-sm text-sm">You can view the full answer or start a detailed step-by-step explanation.</p>
               </div>
             )}
             {explanations.map((exp, index) => (
               <div key={index} className="animate-in fade-in-50 slide-in-from-bottom-5 duration-500">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4">
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground">
                     {index + 1}
                   </div>
-                  <div className="flex-1 rounded-md border bg-secondary/50 p-4">
-                    <p className="whitespace-pre-wrap font-body leading-relaxed text-foreground">
+                  <div className="flex-1 rounded-md border bg-secondary/50 p-3 sm:p-4">
+                    <p className="whitespace-pre-wrap font-body leading-relaxed text-sm sm:text-base text-foreground">
                         {exp}
                     </p>
                   </div>
@@ -507,7 +507,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
               </div>
             ))}
             {isLoading && isExplanationStarted && explanations.length === 0 && (
-              <div className="flex items-center justify-center text-muted-foreground h-full">
+              <div className="flex items-center justify-center text-muted-foreground h-full p-4">
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Your AI tutor is preparing your first explanation...
               </div>
@@ -527,7 +527,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                     <Trophy className="h-8 w-8 flex-shrink-0 text-green-600" />
                     <div>
                         <h3 className="font-bold">Great job, {profile.name}!</h3>
-                        <p>You have successfully solved the problem.</p>
+                        <p className="text-sm">You have successfully solved the problem.</p>
                     </div>
                 </div>
             )}
@@ -535,7 +535,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
         </ScrollArea>
       </CardContent>
       {isExplanationStarted && explanations.length > 0 && (
-        <CardFooter className="border-t bg-slate-50 pt-6">
+        <CardFooter className="border-t bg-slate-50 p-4 sm:pt-6">
             <div className="flex w-full flex-col-reverse gap-4 sm:flex-row sm:justify-between">
             <Button
                 variant="outline"
