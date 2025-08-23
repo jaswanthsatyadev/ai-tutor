@@ -65,6 +65,10 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
   const [crop, setCrop] = useState<ReactCropType>();
   const imageRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [isVoiceLanguageDialogOpen, setIsVoiceLanguageDialogOpen] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const scrollViewportRef = useRef<ElementRef<"div">>(null);
   const { toast } = useToast();
@@ -183,6 +187,59 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
       reader.readAsDataURL(file);
     }
   };
+  
+  const handleVoiceInput = (language: 'en-IN' | 'te-IN') => {
+    setIsVoiceLanguageDialogOpen(false);
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast({
+        variant: 'destructive',
+        title: 'Voice Recognition Not Supported',
+        description: 'Your browser does not support voice recognition. Please try a different browser like Chrome.',
+      });
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+
+    recognition.lang = language;
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setProblemStatement(prev => prev ? `${prev} ${transcript}` : transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      toast({
+        variant: 'destructive',
+        title: 'Voice Recognition Error',
+        description: event.error === 'not-allowed' ? 'Please allow microphone access.' : 'An error occurred during voice recognition.',
+      });
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
 
   const startProblem = async () => {
     setExplanations([]);
@@ -315,14 +372,14 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
         });
         setCurrentStepContent(newExplanation);
     } catch (error) {
-        console.error('Error re-generating explanation:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Error re-generating explanation',
-            description: 'There was a problem communicating with the AI tutor. Please try again.',
-        });
+      console.error('Error re-generating explanation:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error re-generating explanation',
+        description: 'There was a problem communicating with the AI tutor. Please try again.',
+      });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -345,11 +402,12 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
         <div className="space-y-2 pt-2">
             <div className="relative">
                 <Textarea 
-                    placeholder="Type your math problem or instructions here..."
+                    placeholder={isListening ? 'Listening...' : "Type your math problem or instructions here..."}
                     value={problemStatement}
                     onChange={(e) => setProblemStatement(e.target.value)}
                     className="pr-10 text-sm sm:text-base"
                     rows={2}
+                    disabled={isListening}
                 />
                  <Type className="absolute right-3 top-3 h-5 w-5 text-muted-foreground" />
             </div>
@@ -373,14 +431,27 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                     <Button variant="outline" size="icon" className="flex-1 sm:flex-none" onClick={() => setIsCameraOpen(true)}>
                         <Camera className="h-5 w-5" />
                     </Button>
-                    <Button variant="outline" size="icon" className="flex-1 sm:flex-none" onClick={() => toast({ title: "Voice input coming soon!"})}>
-                        <Mic className="h-5 w-5" />
-                    </Button>
+                     <Dialog open={isVoiceLanguageDialogOpen} onOpenChange={setIsVoiceLanguageDialogOpen}>
+                      <DialogTrigger asChild>
+                         <Button variant="outline" size="icon" className="flex-1 sm:flex-none" disabled={isListening}>
+                            {isListening ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mic className="h-5 w-5" />}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-xs">
+                          <DialogHeader>
+                              <DialogTitle>Choose Language</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid grid-cols-2 gap-4 py-4">
+                              <Button onClick={() => handleVoiceInput('en-IN')}>English</Button>
+                              <Button onClick={() => handleVoiceInput('te-IN')}>Telugu</Button>
+                          </div>
+                      </DialogContent>
+                    </Dialog>
                  </div>
             </div>
         </div>
         <div className="pt-4 flex flex-wrap gap-2 items-center">
-            <Button onClick={startProblem} disabled={!problemStatement && !photoDataUri}>
+            <Button onClick={startProblem} disabled={(!problemStatement && !photoDataUri)}>
               <ArrowRight className="mr-2" />
               Start Solving
             </Button>
@@ -622,5 +693,3 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     </>
   );
 }
-
-    
