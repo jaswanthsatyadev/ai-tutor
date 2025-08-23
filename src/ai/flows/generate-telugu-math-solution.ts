@@ -23,7 +23,7 @@ const GenerateTeluguMathSolutionInputSchema = z.object({
    studentProfile: z
     .string()
     .describe(
-      'The student profile, including name, class, focus area, and learning speed. For example: Deepak, 9th class, IIT Foundation track, focus: Mathematics first, ahen Science. Slow learner.'
+      'The student profile, including name, class, focus area, and learning speed. For example: Deepak, 9th class, IIT Foundation track, focus: Mathematics first, then Science. Slow learner.'
     ),
   isRefetch: z.boolean().optional().describe('Whether the user is asking for a re-explanation of the same step because they did not understand.')
 });
