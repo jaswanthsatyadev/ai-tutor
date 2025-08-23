@@ -105,6 +105,7 @@ const generateExplanationsPrompt = ai.definePrompt({
 - **Strictly use standard formulas** like (a+b)², (a+b)³, etc. commonly taught in 9th class IIT Foundation curriculum whenever possible to simplify problems. This is a critical step.
 - The student is a slow learner, so be patient and extremely detailed in your explanations.
 - You are tutoring a student with this profile: {{{studentProfile}}}.
+- **Maximum 7 Steps:** The entire problem must be solved in a maximum of 7 steps. This is a strict limit. Combine smaller calculations into a single logical step if necessary, but ensure the explanation for that step remains clear and detailed.
 - Focus only on the provided student profile.
 - Avoid comparing simple concepts to complex real-life examples.
 ---
