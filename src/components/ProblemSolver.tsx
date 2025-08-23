@@ -391,12 +391,12 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
 
   return (
     <>
-    <Card className="flex h-full flex-col shadow-lg p-4 sm:p-6">
-      <CardHeader className="p-0 sm:p-0">
+    <Card className="flex h-full flex-col shadow-lg p-2 sm:p-4">
+      <CardHeader className="p-2 sm:p-2">
         <CardTitle className="font-headline text-xl sm:text-2xl text-primary">
           Problem to Solve
         </CardTitle>
-        <CardDescription className="pt-2 text-sm">
+        <CardDescription className="pt-2 text-sm sm:text-base">
             Enter the problem below, upload an image, take a photo, or use your voice.
         </CardDescription>
         <div className="space-y-2 pt-2">
@@ -405,7 +405,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                     placeholder={isListening ? 'Listening...' : "Type your math problem or instructions here..."}
                     value={problemStatement}
                     onChange={(e) => setProblemStatement(e.target.value)}
-                    className="pr-10 text-sm sm:text-base"
+                    className="pr-10 text-sm"
                     rows={2}
                     disabled={isListening}
                 />
@@ -423,7 +423,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                  <div className="flex-1">
                     <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" ref={fileInputRef} />
                     <Button variant="outline" className="w-full justify-start" onClick={() => fileInputRef.current?.click()}>
-                        <Upload className="mr-2" />
+                        <Upload className="mr-2 h-4 w-4" />
                         Select from Gallery
                     </Button>
                  </div>
@@ -452,7 +452,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
         </div>
         <div className="pt-4 flex flex-wrap gap-2 items-center">
             <Button onClick={startProblem}>
-              <ArrowRight className="mr-2" />
+              <ArrowRight className="mr-2 h-4 w-4" />
               Start Solving
             </Button>
              {isProblemStarted && !isExplanationStarted && !isLoading && (
@@ -460,8 +460,8 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button variant="secondary" onClick={() => getFullAnswer('English')}>
-                                <FileText className="mr-2" />
-                                Show Full Answer in English
+                                <FileText className="mr-2 h-4 w-4" />
+                                Answer (English)
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-2xl">
@@ -476,19 +476,19 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                                     </div>
                                 )}
                                 {fullSolution.english && (
-                                    <p className="whitespace-pre-wrap font-code text-sm sm:text-base leading-relaxed">
+                                    <p className="whitespace-pre-wrap font-code text-sm leading-relaxed">
                                         {fullSolution.english}
                                     </p>
                                 )}
                             </ScrollArea>
-                            <DialogFooter className="gap-2 sm:justify-between">
+                            <DialogFooter className="gap-2 sm:justify-between pt-4">
                                 <Button
                                     variant="outline"
                                     onClick={() => getFullAnswer('English', true)}
                                     disabled={isFullSolutionLoading}
                                     className="border-accent text-accent-foreground hover:bg-accent/10 hover:text-accent-foreground"
                                 >
-                                    <HelpCircle className="mr-2" />
+                                    <HelpCircle className="mr-2 h-4 w-4" />
                                     I didn't understand
                                 </Button>
                                 <DialogClose asChild>
@@ -500,8 +500,8 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button variant="secondary" onClick={() => getFullAnswer('Telugu')}>
-                                <FileText className="mr-2" />
-                                Show Full Answer in Telugu
+                                <FileText className="mr-2 h-4 w-4" />
+                                Answer (Telugu)
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-2xl">
@@ -516,19 +516,19 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                                     </div>
                                 )}
                                 {fullSolution.telugu && (
-                                    <p className="whitespace-pre-wrap font-code text-sm sm:text-base leading-relaxed">
+                                    <p className="whitespace-pre-wrap font-code text-sm leading-relaxed">
                                         {fullSolution.telugu}
                                     </p>
                                 )}
                             </ScrollArea>
-                            <DialogFooter className="gap-2 sm:justify-between">
+                            <DialogFooter className="gap-2 sm:justify-between pt-4">
                                  <Button
                                     variant="outline"
                                     onClick={() => getFullAnswer('Telugu', true)}
                                     disabled={isFullSolutionLoading}
                                     className="border-accent text-accent-foreground hover:bg-accent/10 hover:text-accent-foreground"
                                 >
-                                    <HelpCircle className="mr-2" />
+                                    <HelpCircle className="mr-2 h-4 w-4" />
                                     I didn't understand
                                 </Button>
                                 <DialogClose asChild>
@@ -539,15 +539,15 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                     </Dialog>
 
                     <Button variant="secondary" onClick={startStepByStepExplanation}>
-                        <PlayCircle className="mr-2" />
-                        Start Step-by-Step Explanation
+                        <PlayCircle className="mr-2 h-4 w-4" />
+                        Step-by-Step
                     </Button>
                  </>
             )}
         </div>
       </CardHeader>
-      <CardContent className="flex-grow overflow-hidden p-0 sm:p-0 pt-4">
-        <ScrollArea className="h-[40vh] sm:h-[450px] w-full pr-4" viewportRef={scrollViewportRef}>
+      <CardContent className="flex-grow overflow-hidden p-2 sm:p-2 pt-4">
+        <ScrollArea className="h-[calc(100vh-520px)] sm:h-[450px] w-full pr-4" viewportRef={scrollViewportRef}>
           <div className="space-y-6">
             {!isProblemStarted && !isLoading && (
               <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full p-4">
@@ -570,7 +570,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                     {index + 1}
                   </div>
                   <div className="flex-1 rounded-md border bg-secondary/50 p-3 sm:p-4">
-                    <p className="whitespace-pre-wrap font-body leading-relaxed text-sm sm:text-base text-foreground">
+                    <p className="whitespace-pre-wrap font-body leading-relaxed text-sm text-foreground">
                         {exp}
                     </p>
                   </div>
@@ -606,7 +606,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
         </ScrollArea>
       </CardContent>
       {isExplanationStarted && explanations.length > 0 && (
-        <CardFooter className="border-t bg-slate-50 p-4 sm:pt-6">
+        <CardFooter className="border-t bg-slate-50 p-4">
             <div className="flex w-full flex-col-reverse gap-4 sm:flex-row sm:justify-between">
             <Button
                 variant="outline"
@@ -614,7 +614,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                 disabled={isLoading || isFinished}
                 className="border-accent text-accent-foreground hover:bg-accent/10 hover:text-accent-foreground"
             >
-                <HelpCircle />
+                <HelpCircle className="mr-2 h-4 w-4" />
                 I didn't understand
             </Button>
             <Button
@@ -623,7 +623,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                 className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
             >
                 {isFinished ? "Problem Solved!" : (isLoading ? "Thinking..." : "Next Step")}
-                {isLoading ? <Loader2 className="ml-2 animate-spin" /> : <ArrowRight className="ml-2" />}
+                {isLoading ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
             </div>
         </CardFooter>
@@ -684,7 +684,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             <DialogFooter>
                 <Button variant="secondary" onClick={() => { setIsCropOpen(false); setCapturedImage(null); setCrop(undefined)}}>Cancel</Button>
                 <Button onClick={handleCrop}>
-                    <Crop className="mr-2" />
+                    <Crop className="mr-2 h-4 w-4" />
                     Crop and Use Image
                 </Button>
             </DialogFooter>
