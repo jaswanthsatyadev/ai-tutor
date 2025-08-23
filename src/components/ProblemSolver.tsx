@@ -380,7 +380,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             </div>
         </div>
         <div className="pt-4 flex flex-wrap gap-2 items-center">
-            <Button onClick={startProblem} disabled={isLoading || (!problemStatement && !photoDataUri) || isProblemStarted}>
+            <Button onClick={startProblem} disabled={!problemStatement && !photoDataUri}>
               <ArrowRight className="mr-2" />
               Start Solving
             </Button>
