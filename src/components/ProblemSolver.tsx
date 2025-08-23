@@ -451,7 +451,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             </div>
         </div>
         <div className="pt-4 flex flex-wrap gap-2 items-center">
-            <Button onClick={startProblem} disabled={(!problemStatement && !photoDataUri)}>
+            <Button onClick={startProblem}>
               <ArrowRight className="mr-2" />
               Start Solving
             </Button>
@@ -476,7 +476,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                                     </div>
                                 )}
                                 {fullSolution.english && (
-                                    <p className="whitespace-pre-wrap font-code text-sm sm:text-base">
+                                    <p className="whitespace-pre-wrap font-code text-sm sm:text-base leading-relaxed">
                                         {fullSolution.english}
                                     </p>
                                 )}
@@ -516,7 +516,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                                     </div>
                                 )}
                                 {fullSolution.telugu && (
-                                    <p className="whitespace-pre-wrap font-code text-sm sm:text-base">
+                                    <p className="whitespace-pre-wrap font-code text-sm sm:text-base leading-relaxed">
                                         {fullSolution.telugu}
                                     </p>
                                 )}
