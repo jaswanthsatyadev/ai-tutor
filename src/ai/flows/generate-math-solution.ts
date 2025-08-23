@@ -57,6 +57,7 @@ The student did not understand the previous explanation. You must re-explain the
 4.  **Use Standard Formulas:** Strictly use standard formulas like (a+b)², (a+b)³, etc., commonly taught in the 9th class IIT Foundation curriculum. This is a critical requirement.
 5.  **Final Answer:** Clearly state the final answer at the end of the solution.
 6.  **Step-by-Step:** Break down the solution into logical, well-explained steps.
+7.  **Final Summary:** After providing the full detailed solution, add a final section titled "**Here is a quick summary of the steps:**". Under this heading, list all the mathematical steps from the solution concisely, without the detailed explanations, to give a quick overview of the calculation from start to finish.
 
 ---
 {{#if photoDataUri}}
