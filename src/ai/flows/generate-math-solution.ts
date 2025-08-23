@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -26,6 +25,7 @@ const GenerateMathSolutionInputSchema = z.object({
     .describe(
       'The student profile, including name, class, focus area, and learning speed. For example: Deepak, 9th class, IIT Foundation track, focus: Mathematics first, then Science. Slow learner.'
     ),
+  isRefetch: z.boolean().optional().describe('Whether the user is asking for a re-explanation of the same step because they did not understand.')
 });
 export type GenerateMathSolutionInput = z.infer<typeof GenerateMathSolutionInputSchema>;
 
@@ -45,6 +45,10 @@ const generateMathSolutionPrompt = ai.definePrompt({
   input: {schema: GenerateMathSolutionInputSchema},
   output: {schema: GenerateMathSolutionOutputSchema},
   prompt: `You are an expert IIT Foundation math solver. Your task is to provide a complete, extremely detailed, step-by-step mathematical solution to the given problem in English.
+
+{{#if isRefetch}}
+The student did not understand the previous explanation. You must re-explain the entire problem in even simpler terms. Break down each step further. Use simpler analogies and metaphors. Be extremely patient and elaborate on the reasoning behind every single calculation and formula. Assume no prior knowledge.
+{{/if}}
 
 **Rules:**
 1.  **Maximum Clarity and Detail:** This is the most important rule. Provide extremely detailed, step-by-step explanations for each part of the solution. Explain the logic, reasoning, and thought process behind each step clearly and thoroughly. The user must be able to understand the "why" behind every calculation. Assume the student is a slow learner and requires very elaborate explanations.

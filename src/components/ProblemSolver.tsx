@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -6,8 +5,8 @@ import type { ElementRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { generateExplanations, type GenerateExplanationsInput } from '@/ai/flows/generate-explanations';
-import { generateMathSolution } from '@/ai/flows/generate-math-solution';
-import { generateTeluguMathSolution } from '@/ai/flows/generate-telugu-math-solution';
+import { generateMathSolution, type GenerateMathSolutionInput } from '@/ai/flows/generate-math-solution';
+import { generateTeluguMathSolution, type GenerateTeluguMathSolutionInput } from '@/ai/flows/generate-telugu-math-solution';
 import { Loader2, ArrowRight, HelpCircle, Trophy, Upload, Mic, Type, Camera, Crop, FileText, Bot, PlayCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -193,9 +192,9 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     setIsProblemStarted(true);
   }
 
-  const getFullAnswer = async (language: 'English' | 'Telugu') => {
+  const getFullAnswer = async (language: 'English' | 'Telugu', isRefetch = false) => {
     const langKey = language.toLowerCase() as 'english' | 'telugu';
-    if (fullSolution[langKey] || isFullSolutionLoading) return;
+    if (fullSolution[langKey] && !isRefetch || isFullSolutionLoading) return;
 
     setIsFullSolutionLoading(true);
     try {
@@ -203,12 +202,13 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             problemStatement,
             photoDataUri: photoDataUri || undefined,
             studentProfile: `${profile.name}, ${profile.class}, ${profile.description}`,
+            isRefetch
         };
         let result;
         if (language === 'English') {
-            result = await generateMathSolution(commonInput);
+            result = await generateMathSolution(commonInput as GenerateMathSolutionInput);
         } else {
-            result = await generateTeluguMathSolution(commonInput);
+            result = await generateTeluguMathSolution(commonInput as GenerateTeluguMathSolutionInput);
         }
         setFullSolution(prev => ({ ...prev, [langKey]: result.solution }));
     } catch (error) {
@@ -410,7 +410,16 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                                     </p>
                                 )}
                             </ScrollArea>
-                            <DialogFooter>
+                            <DialogFooter className="gap-2 sm:justify-between">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => getFullAnswer('English', true)}
+                                    disabled={isFullSolutionLoading}
+                                    className="border-accent text-accent-foreground hover:bg-accent/10 hover:text-accent-foreground"
+                                >
+                                    <HelpCircle className="mr-2" />
+                                    I didn't understand
+                                </Button>
                                 <DialogClose asChild>
                                     <Button>Close</Button>
                                 </DialogClose>
@@ -441,7 +450,16 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                                     </p>
                                 )}
                             </ScrollArea>
-                            <DialogFooter>
+                            <DialogFooter className="gap-2 sm:justify-between">
+                                 <Button
+                                    variant="outline"
+                                    onClick={() => getFullAnswer('Telugu', true)}
+                                    disabled={isFullSolutionLoading}
+                                    className="border-accent text-accent-foreground hover:bg-accent/10 hover:text-accent-foreground"
+                                >
+                                    <HelpCircle className="mr-2" />
+                                    I didn't understand
+                                </Button>
                                 <DialogClose asChild>
                                     <Button>Close</Button>
                                 </DialogClose>
