@@ -73,7 +73,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     if (isCameraOpen) {
       const getCameraPermission = async () => {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
           }
@@ -334,8 +334,8 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
 
   return (
     <>
-    <Card className="flex h-full flex-col shadow-lg">
-      <CardHeader className="p-4 sm:p-6">
+    <Card className="flex h-full flex-col shadow-lg p-4 sm:p-6">
+      <CardHeader className="p-0 sm:p-0">
         <CardTitle className="font-headline text-xl sm:text-2xl text-primary">
           Problem to Solve
         </CardTitle>
@@ -348,7 +348,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
                     placeholder="Type your math problem or instructions here..."
                     value={problemStatement}
                     onChange={(e) => setProblemStatement(e.target.value)}
-                    className="pr-10"
+                    className="pr-10 text-sm sm:text-base"
                     rows={2}
                 />
                  <Type className="absolute right-3 top-3 h-5 w-5 text-muted-foreground" />
@@ -475,7 +475,7 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
             )}
         </div>
       </CardHeader>
-      <CardContent className="flex-grow overflow-hidden p-4 sm:p-6">
+      <CardContent className="flex-grow overflow-hidden p-0 sm:p-0 pt-4">
         <ScrollArea className="h-[40vh] sm:h-[450px] w-full pr-4" viewportRef={scrollViewportRef}>
           <div className="space-y-6">
             {!isProblemStarted && !isLoading && (
@@ -622,3 +622,5 @@ export function ProblemSolver({ profile }: ProblemSolverProps) {
     </>
   );
 }
+
+    
